@@ -11,6 +11,7 @@ import { DynamoStack } from '../lib/dynamo-tables'
 import { EventBridgeStack } from '../lib/eventbridge'
 import { LambdaStack } from '../lib/lambdas'
 import { S3BucketStack } from '../lib/s3-buckets'
+import { CloudWatchStack } from '../lib/cloudwatch-dash'
 
 const accountId = process?.env?.AWS_ACCOUNT_ID !== undefined ? process?.env?.AWS_ACCOUNT_ID : AWS_ACCOUNT_ID;
 const region = process?.env?.AWS_REGION !== undefined ? process?.env?.AWS_REGION : PRIMARY_REGION
@@ -33,4 +34,10 @@ if (region === PRIMARY_REGION) {
 const s3BucketStack = new S3BucketStack(app, 'S3BucketStack', { env: { account: accountId, region: region } })
 
 const eventBridgeStack = new EventBridgeStack(app, 'EventBridgeStack', { env: { account: accountId, region: region } })
+// we need to be able to target lambdas
+eventBridgeStack.addDependency(lambdaStack)
 
+const cloudWatchStack = new CloudWatchStack(app, 'CloudWatchStack', { env: { account: accountId, region: region } })
+cloudWatchStack.addDependency(lambdaStack)
+cloudWatchStack.addDependency(apiGatewayStack)
+// this will need more addDependency for every stack we want to monitor, maybe add Dynamo next?

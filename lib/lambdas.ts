@@ -1,7 +1,8 @@
-import { Duration, Stack, StackProps } from 'aws-cdk-lib';
+import { Duration, Stack, StackProps, RemovalPolicy } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { Runtime } from 'aws-cdk-lib/aws-lambda'
 import { PythonFunction } from '@aws-cdk/aws-lambda-python-alpha'
+import { Queue, QueueEncryption } from 'aws-cdk-lib/aws-sqs';
 import { StringParameter } from 'aws-cdk-lib/aws-ssm'
 
 import { PROJECT_NAME } from '../config/cdk-env-vars'
@@ -37,6 +38,19 @@ export class LambdaStack extends Stack {
             ManagedPolicy.fromAwsManagedPolicyName("service-role/AWSLambdaBasicExecutionRole")
         )
 
+        const sqsDlqName = `${PROJECT_NAME}-${this.region}-lambda-dlq`
+
+        const sqsDlqQueue = new Queue(this, 'SqsDlqQueue', {
+            queueName: sqsDlqName,
+            encryption: QueueEncryption.KMS_MANAGED,
+            removalPolicy: RemovalPolicy.DESTROY // no need to leave this hanging around
+        });
+        
+        const sqsDlqQueueArn = new StringParameter(this, 'SqsDlqQueueArn', {
+            parameterName: 'lambdaDlqArn',
+            stringValue: sqsDlqQueue.queueArn
+        })
+
         const authEventsLambda = new PythonFunction(this, 'AuthEventsLambda', {
             functionName: `${PROJECT_NAME}-AuthEvents`,
             role: lambdaRole,
@@ -48,7 +62,7 @@ export class LambdaStack extends Stack {
         new StringParameter(this, 'AuthEventLambdaParam', {
             parameterName: 'authEventsLambdaArn', stringValue: authEventsLambda.functionArn
         })
-        // allow cognito to invoke this post-auth event
+        // allow cognito to invoke this
         authEventsLambda.grantInvoke(new ServicePrincipal('cognito-idp.amazonaws.com'))
 
         const cloudwatchAlarmsLambda = new PythonFunction(this, 'CloudwatchAlarmsLambda', {
@@ -81,7 +95,8 @@ export class LambdaStack extends Stack {
             runtime: Runtime.PYTHON_3_9,
             environment: COMMON_LAMBDA_ENV['us-west-2'],
             handler: 'entrypoint',
-           entry: './lambda-src/dlq-handler'
+            entry: './lambda-src/dlq-handler',
+            timeout: Duration.seconds(30) // bump the timeout a bit just in case this takes a little longer
         })
         new StringParameter(this, 'DlqHandlerLambdaParam', {
             parameterName: 'dlqHandlerLambdaArn', stringValue: dlqHandlerLambda.functionArn
@@ -93,7 +108,8 @@ export class LambdaStack extends Stack {
             runtime: Runtime.PYTHON_3_9,
             environment: COMMON_LAMBDA_ENV['us-west-2'],
             handler: 'entrypoint',
-           entry: './lambda-src/dynamo-events'
+            entry: './lambda-src/dynamo-events',
+            timeout: Duration.seconds(30) // bump the timeout a bit just in case this takes a little longer
         })
         new StringParameter(this, 'DynamoEventsLambdaParam', {
             parameterName: 'dynamoEventsLambdaArn', stringValue: dynamoEventsLambda.functionArn
@@ -105,7 +121,8 @@ export class LambdaStack extends Stack {
             runtime: Runtime.PYTHON_3_9,
             environment: {...COMMON_LAMBDA_ENV['us-west-2'], DDB_TABLE_NAME: `${PROJECT_NAME}-access`},
             handler: 'entrypoint',
-           entry: './lambda-src/events-router'
+            entry: './lambda-src/events-router',
+            timeout: Duration.seconds(30) // bump the timeout a bit just in case this takes a little longer
         })
         new StringParameter(this, 'EventsRouterLambdaParam', {
             parameterName: 'eventsRouterLambdaArn', stringValue: eventsRouterLambda.functionArn
@@ -117,7 +134,8 @@ export class LambdaStack extends Stack {
             runtime: Runtime.PYTHON_3_9,
             environment: COMMON_LAMBDA_ENV['us-west-2'],
             handler: 'entrypoint',
-           entry: './lambda-src/kinesis-events'
+            entry: './lambda-src/kinesis-events',
+            timeout: Duration.seconds(30) // bump the timeout a bit just in case this takes a little longer
         })
         new StringParameter(this, 'KinesisEventsLambdaParam', {
             parameterName: 'kinesisEventsLambdaArn', stringValue: kinesisEventsLambda.functionArn
@@ -153,7 +171,7 @@ export class LambdaStack extends Stack {
             runtime: Runtime.PYTHON_3_9,
             environment: COMMON_LAMBDA_ENV['us-west-2'],
             handler: 'entrypoint',
-           entry: './lambda-src/page1'
+            entry: './lambda-src/page1'
         })
         new StringParameter(this, 'Page1LambdaParam', {
             parameterName: 'page1LambdaArn', stringValue: page1Lambda.functionArn
@@ -165,7 +183,7 @@ export class LambdaStack extends Stack {
             runtime: Runtime.PYTHON_3_9,
             environment: COMMON_LAMBDA_ENV['us-west-2'],
             handler: 'entrypoint',
-           entry: './lambda-src/page2'
+            entry: './lambda-src/page2'
         })
         new StringParameter(this, 'Page2LambdaParam', {
             parameterName: 'page2LambdaArn', stringValue: page2Lambda.functionArn

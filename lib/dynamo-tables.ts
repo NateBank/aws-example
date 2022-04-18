@@ -1,4 +1,4 @@
-import { Duration, Stack, StackProps, RemovalPolicy } from 'aws-cdk-lib';
+import { Stack, StackProps, RemovalPolicy } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { Table, BillingMode, TableEncryption, AttributeType } from 'aws-cdk-lib/aws-dynamodb'
 import { StringParameter } from 'aws-cdk-lib/aws-ssm'
