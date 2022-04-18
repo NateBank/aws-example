@@ -1,0 +1,9 @@
+// these are vars that affect how the CDK runs
+// don't commit dumb stuff...
+
+export const AWS_ACCOUNT_ID = ''
+export const PROJECT_NAME = 'yourdemo'
+export const COGNITO_DOMAIN_NAME = 'someseriouslyrandomthingnobodyeverthoughtofwehope' // this is globally unique across all AWS, pick something really good/random!
+export const PRIMARY_REGION = 'us-west-2'
+export const SECONDARY_REGION = 'us-east-2' // some things only allow one failover region, like CFt origin failover
+export const OTHER_REGIONS = ['us-west-1', 'us-east-1']

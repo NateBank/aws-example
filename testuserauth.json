@@ -1,0 +1,9 @@
+{
+    "UserPoolId": "us-west-2_W9Upw0uK9",
+    "ClientId": "7konpabi6niifk71ioo2pcmm1v",
+    "AuthFlow": "ADMIN_NO_SRP_AUTH",
+    "AuthParameters": {
+        "USERNAME": "obiwankenobi",
+        "PASSWORD": "Y0urMy0nlyH0p3!"
+    }
+}

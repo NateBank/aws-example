@@ -1,0 +1,20 @@
+// these are vars passed to all lambda functions
+
+import { PROJECT_NAME } from './cdk-env-vars'
+ 
+// @TODO expand this to multiple regions
+
+// why can't this be accessed via COMMON_LAMBDA_ENV[this.region]?  
+// it would be much cleaner and it's being passed in but I guess TS indexes don't like this...
+export const COMMON_LAMBDA_ENV = {
+    "us-west-2": {
+        COGNITO_USER_POOL: '',
+        COGNITO_CLIENT_ID: '',
+        // you'll have to fill this in after the apigateway stacks, since we don't use a custom domain
+        // and the lambda stack must exist before apigateway tries to pull in all the lambda references
+        EXECUTE_API_URL: '',
+        // and another fun one, the cognito domain doesn't exist until after lambda...
+        COGNITO_URL: '',
+        S3_BUCKET_NAME: `${PROJECT_NAME}-us-west-2-static-assets`
+    }
+}
