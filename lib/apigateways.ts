@@ -30,6 +30,8 @@ export class ApiGatewayStack extends Stack {
             this, 'Page2Lambda', StringParameter.valueForStringParameter(this, 'page2LambdaArn')
         )
 
+// @TODO figure out how to throttle the API, why doesn't HTTP API expose this still....
+
         // set up the API first so we can get its execute endpoint hopefully
         const api = new HttpApi(this, 'HttpApi');
         const executeUrl = api.apiEndpoint

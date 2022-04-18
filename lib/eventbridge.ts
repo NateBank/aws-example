@@ -22,9 +22,9 @@ export class EventBridgeStack extends Stack {
             eventBusName: 'appBus'
         })
 
-        const lambdaRule = new Rule(this, 'LambdaRulez', {
+        const lambdaRule = new Rule(this, 'LambdaRule', {
             eventPattern: {
-                source: ["aws.lambda"], // not sure this is correct...
+                source: ["manualEvents"], // can I just make this up if I don't want an AWS service?
             },
         });
 
