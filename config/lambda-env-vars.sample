@@ -1,6 +1,6 @@
 // these are vars passed to all lambda functions
 
-import { PROJECT_NAME } from './cdk-env-vars'
+import { PROJECT_NAME, COGNITO_DOMAIN_NAME } from './cdk-env-vars'
  
 // @TODO expand this to multiple regions
 
@@ -14,7 +14,7 @@ export const COMMON_LAMBDA_ENV = {
         // and the lambda stack must exist before apigateway tries to pull in all the lambda references
         EXECUTE_API_URL: '',
         // and another fun one, the cognito domain doesn't exist until after lambda...
-        COGNITO_URL: '',
+        COGNITO_URL: `https://${COGNITO_DOMAIN_NAME}.auth.us-west-2.amazoncognito.com`,
         S3_BUCKET_NAME: `${PROJECT_NAME}-us-west-2-static-assets`
     }
 }
