@@ -1,10 +1,11 @@
-import { Duration, Stack, StackProps, RemovalPolicy } from 'aws-cdk-lib';
+import { Stack, StackProps, RemovalPolicy } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { Function } from 'aws-cdk-lib/aws-lambda'
 import { UserPool, UserPoolClient, UserPoolClientIdentityProvider, Mfa, OAuthScope } from 'aws-cdk-lib/aws-cognito'
 import { HttpUserPoolAuthorizer } from '@aws-cdk/aws-apigatewayv2-authorizers-alpha';
 import { HttpLambdaIntegration  } from '@aws-cdk/aws-apigatewayv2-integrations-alpha';
 import { HttpApi, HttpMethod } from '@aws-cdk/aws-apigatewayv2-alpha';
+import { LogGroup } from 'aws-cdk-lib/aws-logs'
 import { StringParameter } from 'aws-cdk-lib/aws-ssm'
 
 import { COGNITO_DOMAIN_NAME } from '../config/cdk-env-vars'
@@ -31,7 +32,18 @@ export class ApiGatewayStack extends Stack {
         )
 
 // @TODO figure out how to throttle the API, why doesn't HTTP API expose this still....
+// the console has moved throttling to its own thing that seems to be configured per stage
 
+// @TODO SET EXPIRATION ON THIS
+        const apigLogs = new LogGroup(this, 'ApigLogs', {
+            logGroupName: 'apigLogs',
+        })
+        
+        new StringParameter(this, 'ApigLogsArn', {
+            parameterName: 'ApigLogsArn', stringValue: apigLogs.logGroupArn
+        })
+
+// @TODO turn off autodeploy and handle it in code
         // set up the API first so we can get its execute endpoint hopefully
         const api = new HttpApi(this, 'HttpApi');
         const executeUrl = api.apiEndpoint
